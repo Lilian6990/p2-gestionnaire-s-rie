@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionnaire de Séries et Films</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+</head>
+<body>
+    <header>
+        <h1>Gestionnaire de Séries et Films</h1>
+    </header>
+
+    <main>
+        <section id="form-section">
+            <div id="notification-container"></div>
+            <h2>Ajouter / Modifier une entrée</h2>
+            <form id="film-series-form" enctype="multipart/form-data">
+                <input type="hidden" id="entry-id">
+                <div class="form-group">
+                    <label for="name">Nom :</label>
+                    <input type="text" id="name" name="name" placeholder="Nom du film ou de la série" required>
+                </div>
+                <div class="form-group">
+                    <label for="type">Type :</label>
+                    <select id="type" name="type" onchange="toggleEpisodeSeasonFields()">
+                        <option value="film">Film</option>
+                        <option value="serie">Série</option>
+                    </select>
+                </div>
+                <div class="form-group episode-season" style="display:none;">
+                    <label for="season">Saison :</label>
+                    <input type="number" id="season" name="season" placeholder="Saison" min="1">
+                    <label for="episode">Épisode :</label>
+                    <input type="number" id="episode" name="episode" placeholder="Épisode" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="status">Statut :</label>
+                    <select id="status" name="status">
+                        <option value="à voir">À voir</option>
+                        <option value="en cours">En cours</option>
+                        <option value="vu">Vu</option>
+                        <option value="en attente de la suite">En attente de la suite</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="favori">Favori :</label>
+                    <input type="checkbox" id="favori" name="favori">
+                </div>
+                <div class="form-group">
+                    <label for="comment">Commentaire :</label>
+                    <textarea id="comment" name="comment" placeholder="Votre commentaire ici..." rows="5"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="rating">Note :</label>
+                    <select id="rating" name="rating">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select> / 5
+                </div>
+                <div class="form-group">
+                    <label for="image">Image :</label>
+                    <input type="file" id="image" name="image" onchange="previewImage(event)">
+                    <div id="image-preview" class="image-preview"></div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" id="add-update-btn">Ajouter</button>
+                    <button type="button" id="cancel-btn" onclick="resetForm()">Annuler</button>
+                </div>
+            </form>
+        </section>
+
+        <section id="list-section">
+            <h2>Liste des Séries et Films</h2>
+            <div id="controls-section">
+                <div id="filter-section">
+                    <label><input type="radio" name="status-filter" value="tous" checked> Tous</label>
+                    <label><input type="radio" name="status-filter" value="à voir"> À voir</label>
+                    <label><input type="radio" name="status-filter" value="en cours"> En cours</label>
+                    <label><input type="radio" name="status-filter" value="vu"> Vu</label>
+                    <label><input type="radio" name="status-filter" value="en attente de la suite"> En attente de la suite</label>
+                </div>
+                <div id="sort-section">
+                    <select id="sort-by">
+                        <option value="name">Nom</option>
+                        <option value="type">Type</option>
+                        <option value="status">Statut</option>
+                        <option value="rating">Note</option>
+                    </select>
+                </div>
+            </div>
+            <div id="entries-container">
+                <!-- Les entrées s'afficheront ici -->
+            </div>
+        </section>
+        
+        <!-- Boîte modale pour afficher les détails -->
+        <div id="details-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="closeModal()">&times;</span>
+                <div id="modal-details"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Gestionnaire de Séries et Films. Tous droits réservés.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        function toggleEpisodeSeasonFields() {
+            const typeSelect = document.getElementById('type');
+            const episodeSeasonFields = document.querySelector('.episode-season');
+            if (typeSelect.value === 'serie') {
+                episodeSeasonFields.style.display = 'block';
+            } else {
+                episodeSeasonFields.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
