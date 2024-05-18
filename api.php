@@ -14,6 +14,7 @@ header('Access-Control-Allow-Methods: POST, GET, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
+
 // Pour gérer correctement les requêtes OPTIONS envoyées par les navigateurs lors des requêtes CORS
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
