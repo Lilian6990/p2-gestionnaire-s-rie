@@ -2,21 +2,28 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <!-- Viewport pour s'assurer que la mise en page est responsive -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestionnaire de Séries et Films</title>
+    <!-- Feuille de style CSS -->
     <link rel="stylesheet" href="style.css">
+    <!-- Favicon pour l'icône du site -->
     <link rel="icon" type="image/png" href="favicon.png">
 </head>
 <body>
+    <!-- En-tête du site -->
     <header>
         <h1>Gestionnaire de Séries et Films</h1>
     </header>
 
+    <!-- Contenu principal -->
     <main>
+        <!-- Section du formulaire pour ajouter ou modifier des entrées -->
         <section id="form-section">
             <div id="notification-container"></div>
             <h2>Ajouter / Modifier une entrée</h2>
             <form id="film-series-form" enctype="multipart/form-data">
+                <!-- Champ caché pour stocker l'identifiant de l'entrée -->
                 <input type="hidden" id="entry-id">
                 <div class="form-group">
                     <label for="name">Nom :</label>
@@ -29,6 +36,7 @@
                         <option value="serie">Série</option>
                     </select>
                 </div>
+                <!-- Champs pour la saison et l'épisode, affichés seulement si le type est "Série" -->
                 <div class="form-group episode-season" style="display:none;">
                     <label for="season">Saison :</label>
                     <input type="number" id="season" name="season" placeholder="Saison" min="1">
@@ -68,7 +76,7 @@
                     <input type="file" id="image" name="image" onchange="previewImage(event)">
                     <div id="image-preview" class="image-preview"></div>
                 </div>
-                
+                <!-- Boutons pour soumettre ou annuler le formulaire -->
                 <div class="form-actions">
                     <button type="submit" id="add-update-btn">Ajouter</button>
                     <button type="button" id="cancel-btn" onclick="resetForm()">Annuler</button>
@@ -76,9 +84,11 @@
             </form>
         </section>
 
+        <!-- Section pour afficher la liste des séries et films -->
         <section id="list-section">
             <h2>Liste des Séries et Films</h2>
             <div id="controls-section">
+                <!-- Filtres pour trier les entrées par statut -->
                 <div id="filter-section">
                     <label><input type="radio" name="status-filter" value="tous" checked> Tous</label>
                     <label><input type="radio" name="status-filter" value="à voir"> À voir</label>
@@ -86,6 +96,7 @@
                     <label><input type="radio" name="status-filter" value="vu"> Vu</label>
                     <label><input type="radio" name="status-filter" value="en attente de la suite"> En attente de la suite</label>
                 </div>
+                <!-- Option de tri -->
                 <div id="sort-section">
                     <select id="sort-by">
                         <option value="name">Nom</option>
@@ -100,7 +111,7 @@
             </div>
         </section>
         
-        <!-- Boîte modale pour afficher les détails -->
+        <!-- Boîte modale pour afficher les détails d'une entrée -->
         <div id="details-modal" class="modal">
             <div class="modal-content">
                 <span class="close-button" onclick="closeModal()">&times;</span>
@@ -109,12 +120,17 @@
         </div>
     </main>
 
+    <!-- Pied de page -->
     <footer>
         <p>&copy; 2024 Gestionnaire de Séries et Films. Tous droits réservés.</p>
     </footer>
 
+    <!-- Inclusion du fichier JavaScript -->
     <script src="script.js"></script>
     <script>
+        /**
+         * Affiche ou masque les champs saison et épisode en fonction du type sélectionné
+         */
         function toggleEpisodeSeasonFields() {
             const typeSelect = document.getElementById('type');
             const episodeSeasonFields = document.querySelector('.episode-season');

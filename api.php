@@ -14,7 +14,6 @@ header('Access-Control-Allow-Methods: POST, GET, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
-
 // Pour gérer correctement les requêtes OPTIONS envoyées par les navigateurs lors des requêtes CORS
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
@@ -47,6 +46,10 @@ switch ($action) {
         break;
 }
 
+/**
+ * Récupère toutes les entrées de la base de données
+ * @param PDO $db - Instance de la base de données
+ */
 function fetchAll($db) {
     try {
         $stmt = $db->query('SELECT * FROM entries ORDER BY favori DESC, name ASC');
@@ -56,6 +59,11 @@ function fetchAll($db) {
     }
 }
 
+/**
+ * Récupère une entrée spécifique de la base de données
+ * @param PDO $db - Instance de la base de données
+ * @param int $id - Identifiant de l'entrée à récupérer
+ */
 function getEntry($db, $id) {
     try {
         $stmt = $db->prepare('SELECT * FROM entries WHERE id = :id');
@@ -66,6 +74,11 @@ function getEntry($db, $id) {
     }
 }
 
+/**
+ * Supprime une entrée de la base de données
+ * @param PDO $db - Instance de la base de données
+ * @param int $id - Identifiant de l'entrée à supprimer
+ */
 function deleteEntry($db, $id) {
     try {
         $stmt = $db->prepare('DELETE FROM entries WHERE id = :id');
@@ -76,11 +89,16 @@ function deleteEntry($db, $id) {
     }
 }
 
+/**
+ * Soumet une nouvelle entrée ou met à jour une entrée existante
+ * @param PDO $db - Instance de la base de données
+ */
 function submitEntry($db) {
     try {
         $data = $_POST;
         $imagePath = handleImageUpload($_FILES);
 
+        // Si l'image n'est pas téléchargée et qu'une entrée existante est mise à jour, conservez l'image existante
         if (empty($imagePath) && !empty($data['id'])) {
             $stmt = $db->prepare('SELECT imagePath FROM entries WHERE id = :id');
             $stmt->execute(['id' => $data['id']]);
@@ -88,6 +106,7 @@ function submitEntry($db) {
             $imagePath = $existingEntry['imagePath'];
         }
 
+        // Détermine si l'entrée doit être mise à jour ou insérée
         if (!empty($data['id'])) {
             $query = "UPDATE entries SET name = :name, type = :type, status = :status, season = :season, episode = :episode, comment = :comment, rating = :rating, imagePath = :imagePath, favori = :favori WHERE id = :id";
         } else {
@@ -123,6 +142,11 @@ function submitEntry($db) {
     }
 }
 
+/**
+ * Bascule l'état favori d'une entrée
+ * @param PDO $db - Instance de la base de données
+ * @param int $id - Identifiant de l'entrée à mettre à jour
+ */
 function toggleFavorite($db, $id) {
     try {
         $stmt = $db->prepare('UPDATE entries SET favori = 1 - favori WHERE id = :id');
@@ -133,6 +157,11 @@ function toggleFavorite($db, $id) {
     }
 }
 
+/**
+ * Gère le téléchargement de l'image
+ * @param array $file - Tableau contenant les informations sur le fichier téléchargé
+ * @return string - Chemin du fichier téléchargé
+ */
 function handleImageUpload($file) {
     try {
         if (isset($file['image']) && $file['image']['error'] == UPLOAD_ERR_OK) {
