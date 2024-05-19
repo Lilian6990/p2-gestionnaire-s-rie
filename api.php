@@ -19,26 +19,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
+// Fonction pour échapper les chaînes de caractères
+function sanitizeString($string) {
+    return htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
+}
+
 // Route les requêtes en fonction de l'action
-$action = $_GET['action'] ?? $_POST['action'] ?? '';
+$action = sanitizeString($_GET['action'] ?? $_POST['action'] ?? '');
 
 switch ($action) {
     case 'fetchAll':
         fetchAll($db);
         break;
     case 'getEntry':
-        $id = $_GET['id'] ?? '';
+        $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
         getEntry($db, $id);
         break;
     case 'delete':
-        $id = $_GET['id'] ?? $_POST['id'] ?? '';
+        $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) ?? filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
         deleteEntry($db, $id);
         break;
     case 'submit':
         submitEntry($db);
         break;
     case 'toggleFavorite':
-        $id = $_POST['id'] ?? '';
+        $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
         toggleFavorite($db, $id);
         break;
     default:
@@ -65,6 +70,11 @@ function fetchAll($db) {
  * @param int $id - Identifiant de l'entrée à récupérer
  */
 function getEntry($db, $id) {
+    if ($id === false) {
+        echo json_encode(['error' => true, 'message' => 'ID invalide.']);
+        return;
+    }
+
     try {
         $stmt = $db->prepare('SELECT * FROM entries WHERE id = :id');
         $stmt->execute(['id' => $id]);
@@ -80,6 +90,11 @@ function getEntry($db, $id) {
  * @param int $id - Identifiant de l'entrée à supprimer
  */
 function deleteEntry($db, $id) {
+    if ($id === false) {
+        echo json_encode(['error' => true, 'message' => 'ID invalide.']);
+        return;
+    }
+
     try {
         $stmt = $db->prepare('DELETE FROM entries WHERE id = :id');
         $success = $stmt->execute(['id' => $id]);
@@ -95,7 +110,24 @@ function deleteEntry($db, $id) {
  */
 function submitEntry($db) {
     try {
-        $data = $_POST;
+        $data = filter_input_array(INPUT_POST, [
+            'id' => FILTER_VALIDATE_INT,
+            'name' => FILTER_DEFAULT,
+            'type' => FILTER_DEFAULT,
+            'status' => FILTER_DEFAULT,
+            'season' => FILTER_VALIDATE_INT,
+            'episode' => FILTER_VALIDATE_INT,
+            'comment' => FILTER_DEFAULT,
+            'rating' => FILTER_VALIDATE_INT,
+            'favori' => FILTER_VALIDATE_BOOLEAN
+        ]);
+
+        // Échapper les chaînes de caractères
+        $data['name'] = sanitizeString($data['name']);
+        $data['type'] = sanitizeString($data['type']);
+        $data['status'] = sanitizeString($data['status']);
+        $data['comment'] = sanitizeString($data['comment']);
+
         $imagePath = handleImageUpload($_FILES);
 
         // Si l'image n'est pas téléchargée et qu'une entrée existante est mise à jour, conservez l'image existante
@@ -123,7 +155,7 @@ function submitEntry($db) {
             ':comment' => $data['comment'],
             ':rating' => $data['rating'],
             ':imagePath' => $imagePath,
-            ':favori' => isset($data['favori']) ? 1 : 0
+            ':favori' => $data['favori'] ? 1 : 0
         ];
 
         if (!empty($data['id'])) {
@@ -148,6 +180,11 @@ function submitEntry($db) {
  * @param int $id - Identifiant de l'entrée à mettre à jour
  */
 function toggleFavorite($db, $id) {
+    if ($id === false) {
+        echo json_encode(['error' => true, 'message' => 'ID invalide.']);
+        return;
+    }
+
     try {
         $stmt = $db->prepare('UPDATE entries SET favori = 1 - favori WHERE id = :id');
         $stmt->execute(['id' => $id]);
@@ -169,6 +206,12 @@ function handleImageUpload($file) {
             $fileName = basename(preg_replace("/[^a-zA-Z0-9.]/", "_", $file['image']['name']));
             $targetFilePath = $targetDir . $fileName;
 
+            // Vérifie si le fichier est une image
+            $fileType = mime_content_type($file['image']['tmp_name']);
+            if (strpos($fileType, 'image/') !== 0) {
+                throw new Exception('Le fichier téléchargé n\'est pas une image valide.');
+            }
+
             if (!file_exists($targetDir)) {
                 mkdir($targetDir, 0777, true);
             }
@@ -185,3 +228,4 @@ function handleImageUpload($file) {
         echo json_encode(['error' => true, 'message' => $e->getMessage()]);
     }
 }
+?>
