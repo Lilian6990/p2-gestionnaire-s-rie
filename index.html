@@ -140,6 +140,24 @@
                 episodeSeasonFields.style.display = 'none';
             }
         }
+
+        /**
+         * Échappe les chaînes de caractères pour prévenir les failles XSS
+         * @param {string} str - Chaîne de caractères à échapper
+         * @return {string} - Chaîne de caractères échappée
+         */
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, function(tag) {
+                const charsToReplace = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                };
+                return charsToReplace[tag] || tag;
+            });
+        }
     </script>
 </body>
 </html>

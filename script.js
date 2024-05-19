@@ -7,13 +7,13 @@ function openModal(entry) {
     const modalDetails = document.getElementById('modal-details');
     
     modalDetails.innerHTML = `
-        <h2>${entry.name}</h2>
-        <p><strong>Type:</strong> ${entry.type}</p>
-        <p><strong>Statut:</strong> ${entry.status}</p>
-        ${entry.type === 'serie' ? `<p><strong>Saison:</strong> ${entry.season}, <strong>Épisode:</strong> ${entry.episode}</p>` : ''}
-        <p><strong>Commentaire:</strong> ${entry.comment}</p>
+        <h2>${escapeHTML(entry.name)}</h2>
+        <p><strong>Type:</strong> ${escapeHTML(entry.type)}</p>
+        <p><strong>Statut:</strong> ${escapeHTML(entry.status)}</p>
+        ${entry.type === 'serie' ? `<p><strong>Saison:</strong> ${escapeHTML(entry.season.toString())}, <strong>Épisode:</strong> ${escapeHTML(entry.episode.toString())}</p>` : ''}
+        <p><strong>Commentaire:</strong> ${escapeHTML(entry.comment)}</p>
         <p><strong>Note:</strong> ${'★'.repeat(entry.rating)}</p>
-        ${entry.imagePath ? `<img src="${entry.imagePath}" alt="${entry.name}" style="max-width: 100%;">` : ''}
+        ${entry.imagePath ? `<img src="${escapeHTML(entry.imagePath)}" alt="${escapeHTML(entry.name)}" style="max-width: 100%;">` : ''}
     `;
     
     modal.style.display = 'block';
@@ -133,6 +133,7 @@ async function loadEntries() {
         return await response.json();
     } catch (error) {
         console.error('Erreur lors du chargement des entrées:', error);
+        return [];
     }
 }
 
@@ -178,14 +179,14 @@ function displayEntries(entries) {
         entryDiv.classList.add('entry');
         entryDiv.innerHTML = `
             <div class="entry-image">
-                <img src="${entry.imagePath}" alt="${entry.name}">
+                <img src="${escapeHTML(entry.imagePath)}" alt="${escapeHTML(entry.name)}">
             </div>
             <div class="entry-info">
-                <h3>${truncateText(entry.name, 30)}</h3>
-                <p>Type: ${entry.type}</p>
-                <p>Statut: ${entry.status}</p>
-                ${entry.type === 'serie' ? `<p>Saison: ${entry.season}, Épisode: ${entry.episode}</p>` : ''}
-                <p>Commentaire: ${truncateText(entry.comment, 50)}</p>
+                <h3>${truncateText(escapeHTML(entry.name), 30)}</h3>
+                <p>Type: ${escapeHTML(entry.type)}</p>
+                <p>Statut: ${escapeHTML(entry.status)}</p>
+                ${entry.type === 'serie' ? `<p>Saison: ${escapeHTML(entry.season.toString())}, Épisode: ${escapeHTML(entry.episode.toString())}</p>` : ''}
+                <p>Commentaire: ${truncateText(escapeHTML(entry.comment), 50)}</p>
                 <p>Note: ${'★'.repeat(entry.rating)}</p>
                 <button onclick="editEntry('${entry.id}')">Modifier</button>
                 <button onclick="deleteEntry('${entry.id}')">Supprimer</button>
@@ -238,7 +239,7 @@ async function editEntry(id) {
         
         const imagePreview = document.getElementById('image-preview');
         if (entry.imagePath) {
-            imagePreview.innerHTML = `<img src="${entry.imagePath}" alt="Image Preview" style="max-width: 200px;"/>`;
+            imagePreview.innerHTML = `<img src="${escapeHTML(entry.imagePath)}" alt="Image Preview" style="max-width: 200px;"/>`;
         } else {
             imagePreview.innerHTML = 'Aucune image';
         }
@@ -308,4 +309,22 @@ function truncateText(text, maxLength) {
         return text.substring(0, maxLength) + '...';
     }
     return text;
+}
+
+/**
+ * Échappe les chaînes de caractères pour prévenir les failles XSS
+ * @param {string} str - Chaîne de caractères à échapper
+ * @return {string} - Chaîne de caractères échappée
+ */
+function escapeHTML(str) {
+    return str.replace(/[&<>'"]/g, function(tag) {
+        const charsToReplace = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        };
+        return charsToReplace[tag] || tag;
+    });
 }
